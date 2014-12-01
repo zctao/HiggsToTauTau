@@ -1,0 +1,190 @@
+#include "TROOT.h"
+#include "TStyle.h"
+#include "TLatex.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TChain.h"
+#include "TBranch.h"
+#include "TLeaf.h"
+#include "TCanvas.h"
+#include "TLegend.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TF1.h"
+#include "TProfile.h"
+#include "TProfile2D.h"
+#include "TMath.h"
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+void GeneratorPlot(TString type = "gg2H", TString Ecm = "13TeV") {
+  
+  //Read Ntuples
+  TChain* tree = new TChain("GeneratorNtupleMaker/H2TauTauTree");
+  tree -> Add("RootFiles/"+Ecm+"/H2tautauNtuple_"+type+".root");
+
+  if (tree->GetEntries() == 0) {
+    cout << "File doesn't exsit or is empty, returning..." << endl;
+    return;
+  }
+
+  //____________________________________________________________________________
+  //define leafs & branches
+  vector<float>* higgs_pt;
+  vector<float>* higgs_eta;
+  vector<float>* higgs_phi;
+  vector<float>* higgs_mass;
+  vector<int>*   higgs_id;
+  
+  vector<float>* tau_pt;
+  vector<float>* tau_eta;
+  vector<float>* tau_phi;
+  vector<float>* tau_mass;
+  vector<int>*   tau_id;
+
+  vector<int>*   tau_nprongs;
+  vector<int>*   tau_nprongsK;
+ 
+  vector<int>*   taudecay_index;
+  vector<float>* taudecay_vr;
+  vector<float>* taudecay_vz;
+  vector<int>*   taudecayprod_id;
+
+  vector<int>*   stabledaug_index;
+  vector<int>*   tau_nvisstabledaug;
+  vector<float>* tau_vispt;
+  vector<float>* stabledaug_pt;
+  vector<float>* stabledaug_eta;
+  vector<float>* stabledaug_phi;
+  vector<float>* stabledaug_mass;
+  vector<int>*   stabledaug_id;
+
+  vector<float>* recohiggs_mass;
+
+
+  TBranch* b_higgs_pt;
+  TBranch* b_higgs_eta;
+  TBranch* b_higgs_phi;
+  TBranch* b_higgs_mass;
+  TBranch* b_higgs_id;
+
+  TBranch* b_tau_pt;
+  TBranch* b_tau_eta;
+  TBranch* b_tau_phi;
+  TBranch* b_tau_mass;
+  TBranch* b_tau_id;
+
+  TBranch* b_tau_nprongs;
+  TBranch* b_tau_nprongsK;
+  
+  TBranch* b_taudecay_index;
+  TBranch* b_taudecay_vr;
+  TBranch* b_taudecay_vz;
+  TBranch* b_taudecayprod_id;
+
+  TBranch* b_stabledaug_index;
+  TBranch* b_tau_nvisstabledaug;
+  TBranch* b_tau_vispt;
+  TBranch* b_stabledaug_pt;
+  TBranch* b_stabledaug_eta;
+  TBranch* b_stabledaug_phi;
+  TBranch* b_stabledaug_mass;
+  TBranch* b_stabledaug_id;
+
+  TBranch* b_recohiggs_mass;
+
+
+  higgs_pt = 0;
+  higgs_eta = 0;
+  higgs_phi = 0;
+  higgs_mass = 0;
+  higgs_id = 0;
+  
+  tau_pt = 0;
+  tau_eta = 0;
+  tau_phi = 0;
+  tau_mass = 0;
+  tau_id = 0;
+ 
+  taudecay_index = 0;
+  taudecay_vr = 0;
+  taudecay_vz = 0;
+  taudecayprod_id = 0;
+
+  stabledaug_index = 0;
+  tau_nvisstabledaug = 0;
+  tau_vispt = 0;
+  stabledaug_pt = 0;
+  stabledaug_eta = 0;
+  stabledaug_phi = 0;
+  stabledaug_mass = 0;
+  stabledaug_id = 0;
+
+  recohiggs_mass = 0;
+
+
+  tree->SetBranchAddress("higgs_pt", &higgs_pt, &b_higgs_pt);
+  tree->SetBranchAddress("higgs_eta", &higgs_eta, &b_higgs_eta);
+  tree->SetBranchAddress("higgs_phi", &higgs_phi, &b_higgs_phi);
+  tree->SetBranchAddress("higgs_mass", &higgs_pt, &b_higgs_pt);
+  tree->SetBranchAddress("higgs_id", &higgs_id, &b_higgs_id);
+
+  tree->SetBranchAddress("tau_pt", &tau_pt, &b_tau_pt);
+  tree->SetBranchAddress("tau_eta", &tau_eta, &b_tau_eta);
+  tree->SetBranchAddress("tau_phi", &tau_phi, &b_tau_phi);
+  tree->SetBranchAddress("tau_mass", &tau_mass, &b_tau_mass);
+  tree->SetBranchAddress("tau_id", &tau_id, &b_tau_id);
+
+  tree->SetBranchAddress("tau_nprongs", &tau_nprongs, &b_tau_nprongs);
+  tree->SetBranchAddress("tau_nprongsK", &tau_nprongsK, &b_tau_nprongsK);
+
+  tree->SetBranchAddress("taudecay_index", &taudecay_index, &b_taudecay_index);
+  tree->SetBranchAddress("taudecay_vr", &taudecay_vr, &b_taudecay_vr);
+  tree->SetBranchAddress("taudecay_vz", &taudecay_vz, &b_taudecay_vz);
+  tree->SetBranchAddress("taudecayprod_id", &taudecayprod_id, &b_taudecayprod_id);
+
+  tree->SetBranchAddress("stabledaug_index", &stabledaug_index, &b_stabledaug_index);
+  tree->SetBranchAddress("tau_nvisstabledaug", &tau_nvisstabledaug, &b_tau_nvisstabledaug);
+  tree->SetBranchAddress("tau_vispt", &tau_vispt, &b_tau_vispt);
+  tree->SetBranchAddress("stabledaug_pt", &stabledaug_pt, &b_stabledaug_pt);
+  tree->SetBranchAddress("stabledaug_eta", &stabledaug_eta, &b_stabledaug_eta);
+  tree->SetBranchAddress("stabledaug_phi", &stabledaug_phi, &b_stabledaug_phi);
+  tree->SetBranchAddress("stabledaug_mass", &stabledaug_mass, &b_stabledaug_mass);
+  tree->SetBranchAddress("stabledaug_id", &stabledaug_id, &b_stabledaug_id);
+
+  tree->SetBranchAddress("recohiggs_mass", &recohiggs_mass, &b_recohiggs_mass);
+
+  //___________________________________________________________________________________
+  // histogram
+  //___________________________________________________________________________________
+
+  // 'll' - two leptonic taus
+  // 'lh' - one leptonic tau one hadronic tau
+  // 'hh' - two hadronic taus
+
+  TH1F* h_higgs_pt_ll = new TH1F("higgs_pt_ll", ";Higgs p_{T} [GeV] (#tau_{l}#tau_{l})", 100, 0, 500);
+  TH1F* h_higgs_pt_lh = new TH1F("higgs_pt_lh", ";Higgs p_{T} [GeV] (#tau_{l}#tau_{h})", 100, 0, 500);
+  TH1F* h_higgs_pt_hh = new TH1F("higgs_pt_hh", ";Higgs p_{T} [GeV] (#tau_{}#tau_{h})", 100, 0, 500);
+  
+
+  // ----------------------------------------------------------------------------------------------------------------
+  //        * * * * *     S T A R T   O F   A C T U A L   R U N N I N G   O N   E V E N T S     * * * * *
+  // ----------------------------------------------------------------------------------------------------------------
+
+  int nevt = tree->GetEntries();
+  cout << "number if events = " << nevt << endl;
+ 
+  // ----------------------------------------------------------------------------------------------------------------
+  // event loop
+  for (int i=0; i<nevt; i++) {
+    tree->GetEntry(i,0);
+
+    
+
+  }
+
+}

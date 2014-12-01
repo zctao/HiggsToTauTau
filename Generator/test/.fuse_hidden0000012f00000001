@@ -1,0 +1,59 @@
+#include "TROOT.h"
+#include "TStyle.h"
+#include "TLatex.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TChain.h"
+#include "TBranch.h"
+#include "TLeaf.h"
+#include "TCanvas.h"
+#include "TLegend.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TF1.h"
+#include "TProfile.h"
+#include "TProfile2D.h"
+#include "TMath.h"
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+void GeneratorPlot(TString type = "gg2H", TString Ecm = "13TeV") {
+  
+  //Read Ntuples
+  TChain* tree = new TChain("GeneratorNtupleMaker/H2TauTauTree");
+  tree -> Add("RootFiles/"+Ecm+"/H2tautauNtuple_"+type+".root");
+
+  if (tree->GetEntries() == 0) {
+    cout << "File doesn't exsit or is empty, returning..." << endl;
+    return;
+  }
+
+  //____________________________________________________________________________
+  //define leafs & branches
+  vector<float>* higgs_pt;
+  vector<float>* higgs_eta;
+  vector<float>* higgs_phi;
+  vector<float>* higgs_mass;
+  vector<int>*   higgs_id;
+  
+  vector<float>* tau_pt;
+  vector<float>* tau_eta;
+  vector<float>* tau_phi;
+  vector<float>* tau_mass;
+  vector<int>*   tau_id;
+ 
+  vector<int>*   taudecay_index;
+  vector<float>* taudecay_vx;
+  vector<float>* taudecay_vy;
+  vector<float>* taudecay_vz;
+  vector<int>*   taudecayprod_id;
+
+  vector<int>*   stabledaug_index;
+  vector<int>*   tau_nvisstabledaug;
+  vector<float>* tau_vispt;
+  vector<fl>
+}

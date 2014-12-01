@@ -1,0 +1,462 @@
+/////////////////////////////////////////////////////////////////////////
+//                                                                     //
+//  Analyzer for making mini-ntuple for HiggstoTauTau GEN level events //
+//                                                                     //
+/////////////////////////////////////////////////////////////////////////
+
+////////////////////
+// FRAMEWORK HEADERS
+#include "FWCore/PluginManager/interface/ModuleDef.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+
+///////////////////////
+// DATA FORMATS HEADERS
+#include "DataFormats/Common/interface/Handle.h"
+#include "DataFormats/Common/interface/EDProduct.h"
+#include "DataFormats/Common/interface/Ref.h"
+
+//#include "DataFormats/L1TrackTrigger/interface/TTTypes.h"
+//#include "DataFormats/L1TrackTrigger/interface/TTCluster.h"
+//#include "DataFormats/L1TrackTrigger/interface/TTStub.h"
+//#include "DataFormats/L1TrackTrigger/interface/TTTrack.h"
+//#include "SimDataFormats/TrackingAnalysis/interface/TrackingParticle.h"
+//#include "SimDataFormats/TrackingAnalysis/interface/TrackingVertex.h"
+//#include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
+//#include "SimDataFormats/TrackingHit/interface/PSimHit.h"
+//#include "SimTracker/TrackTriggerAssociation/interface/TTClusterAssociationMap.h"
+//#include "SimTracker/TrackTriggerAssociation/interface/TTStubAssociationMap.h"
+//#include "SimTracker/TrackTriggerAssociation/interface/TTTrackAssociationMap.h"
+//#include "Geometry/Records/interface/StackedTrackerGeometryRecord.h"
+//#include "Geometry/TrackerGeometryBuilder/interface/StackedTrackerGeometry.h"
+//#include "DataFormats/L1TrackTrigger/interface/L1TkEmParticle.h"
+//#include "DataFormats/L1TrackTrigger/interface/L1TkEmParticleFwd.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
+#include "DataFormats/Candidate/interface/Candidate.h"
+//#include "SimDataFormats/SLHC/interface/L1EGCrystalCluster.h"
+#include "DataFormats/Math/interface/LorentzVector.h"
+
+////////////////
+// PHYSICS TOOLS
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+///////////////
+// ROOT HEADERS
+#include <TROOT.h>
+#include <TCanvas.h>
+#include <TTree.h>
+#include <TFile.h>
+#include <TF1.h>
+#include <TH2F.h>
+#include <TH1F.h>
+
+//////////////
+// STD HEADERS
+#include <memory>
+#include <string>
+#include <iostream>
+
+//////////////
+// NAMESPACES
+using namespace std;
+using namespace edm;
+using namespace reco;
+using namespace math;
+
+//////////////////////////////
+//                          //
+//     CLASS DEFINITION     //
+//                          //
+//////////////////////////////
+
+class GeneratorNtupleMaker : public edm::EDAnalyzer
+{
+public:
+
+  // Constructor/destructor
+  explicit GeneratorNtupleMaker(const edm::ParameterSet& iConfig);
+  virtual ~GeneratorNtupleMaker();
+
+  // Mandatory methods
+  virtual void beginJob();
+  virtual void endJob();
+  virtual void analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup);
+  
+  //virtual int tauClass(std::vector<const reco::Candidate *>& stabledaughters, double& maxpt);
+  virtual void getStableDaughters(const reco::Candidate & p,std::vector<const reco::Candidate *>& stabledaughters);
+
+protected:
+  
+private:
+  
+  // Containers of parameters passed by python configuration file
+  edm::ParameterSet config; 
+  
+  int MyProcess;
+
+  //-----------------------------------------------------------------------------------------------
+  // tree & branches for mini-ntuple
+
+  TTree* eventTree;
+
+  // GEN Objects
+  std::vector<float>* m_higgs_pt;
+  std::vector<float>* m_higgs_eta;
+  std::vector<float>* m_higgs_phi;
+  //std::vector<float>* m_higgs_z;   zero
+  std::vector<float>* m_higgs_mass;
+  std::vector<int>*   m_higgs_id;
+
+  std::vector<float>* m_tau_pt;
+  std::vector<float>* m_tau_eta;
+  std::vector<float>* m_tau_phi;
+  //std::vector<float>* m_tau_vx;   zero
+  //std::vector<float>* m_tau_vy;   zero
+  //std::vector<float>* m_tau_vz;   zero
+  std::vector<float>* m_tau_mass;
+  std::vector<int>*   m_tau_id;
+
+  //std::vector<int>*   m_tau_ndaug;
+
+  std::vector<int>*   m_taudecay_index;
+  std::vector<float>* m_taudecay_vx;
+  std::vector<float>* m_taudecay_vy;
+  std::vector<float>* m_taudecay_vz;
+  std::vector<int>*   m_taudecayprod_id;
+
+  std::vector<int>*   m_stabledaug_index;  //come from which tau
+  std::vector<int>*   m_tau_nstabledaug;
+  std::vector<float>* m_tau_vispt;
+  std::vector<float>* m_stabledaug_pt;
+  std::vector<float>* m_stabledaug_eta;
+  std::vector<float>* m_stabledaug_phi;
+  std::vector<float>* m_stabledaug_mass;
+  std::vector<int>  * m_stabledaug_id;
+};
+
+
+//////////////////////////////////
+//                              //
+//     CLASS IMPLEMENTATION     //
+//                              //
+//////////////////////////////////
+
+//////////////
+// CONSTRUCTOR
+GeneratorNtupleMaker::GeneratorNtupleMaker(edm::ParameterSet const& iConfig) : 
+  config(iConfig)
+{
+
+  MyProcess = iConfig.getParameter< int >("MyProcess");
+  
+}
+
+/////////////
+// DESTRUCTOR
+GeneratorNtupleMaker::~GeneratorNtupleMaker()
+{
+}  
+
+//////////
+// END JOB
+void GeneratorNtupleMaker::endJob()
+{
+  // things to be done at the exit of the event Loop
+  cerr << "GeneratorNtupleMaker::endJob" << endl;
+
+}
+
+////////////
+// BEGIN JOB
+void GeneratorNtupleMaker::beginJob()
+{
+
+  // things to be done before entering the event Loop
+  cerr << "GeneratorNtupleMaker::beginJob" << endl;
+
+
+  //-----------------------------------------------------------------------------------------------
+  // book histograms / make ntuple
+  edm::Service<TFileService> fs;
+
+
+  // initilize
+  m_higgs_pt   = new std::vector<float>;
+  m_higgs_eta  = new std::vector<float>;
+  m_higgs_phi  = new std::vector<float>;
+  //m_higgs_z    = new std::vector<float>;
+  m_higgs_mass = new std::vector<float>;
+  m_higgs_id   = new std::vector<int>;
+
+  m_tau_pt   = new std::vector<float>;
+  m_tau_eta  = new std::vector<float>;
+  m_tau_phi  = new std::vector<float>;
+  //m_tau_vx    = new std::vector<float>;
+  //m_tau_vy    = new std::vector<float>;
+  //m_tau_vz    = new std::vector<float>;
+  m_tau_mass    = new std::vector<float>;
+  m_tau_id   = new std::vector<int>;
+ 
+  //m_tau_ndaug = new std::vector<int>;
+  m_taudecay_index = new std::vector<int>;
+  m_taudecay_vx = new std::vector<float>;
+  m_taudecay_vy = new std::vector<float>;
+  m_taudecay_vz = new std::vector<float>;
+  m_taudecayprod_id = new std::vector<int>;
+
+  m_stabledaug_index = new std::vector<int>;
+  m_tau_nstabledaug = new std::vector<int>;
+  m_tau_vispt = new std::vector<float>;
+  m_stabledaug_pt = new std::vector<float>;
+  m_stabledaug_eta = new std::vector<float>;
+  m_stabledaug_phi = new std::vector<float>;
+  m_stabledaug_mass = new std::vector<float>;
+  m_stabledaug_id  = new std::vector<int>;
+
+  
+  // ntuple
+  eventTree = fs->make<TTree>("H2TauTauTree", "Event tree");
+
+  eventTree->Branch("higgs_pt",      &m_higgs_pt);
+  eventTree->Branch("higgs_eta",     &m_higgs_eta);
+  eventTree->Branch("higgs_phi",     &m_higgs_phi);
+  //eventTree->Branch("gen_z",       &m_gen_z);
+  eventTree->Branch("higgs_mass",    &m_higgs_mass);
+  eventTree->Branch("higgs_id",      &m_higgs_id);
+
+  eventTree->Branch("tau_pt",      &m_tau_pt);
+  eventTree->Branch("tau_eta",     &m_tau_eta);
+  eventTree->Branch("tau_phi",     &m_tau_phi);
+  //eventTree->Branch("tau_vx",       &m_tau_vx);
+  //eventTree->Branch("tau_vy",       &m_tau_vy);
+  //eventTree->Branch("tau_vz",       &m_tau_vz);
+  eventTree->Branch("tau_mass",    &m_tau_mass);
+  eventTree->Branch("tau_id",      &m_tau_id);
+  
+  eventTree->Branch("taudecay_index",   &m_taudecay_index);
+  eventTree->Branch("taudecay_vx",   &m_taudecay_vx);
+  eventTree->Branch("taudecay_vy",   &m_taudecay_vy);
+  eventTree->Branch("taudecay_vz",   &m_taudecay_vz);
+  eventTree->Branch("taudecayprod_id",  &m_taudecayprod_id);
+
+  eventTree->Branch("stabledaug_index", &m_stabledaug_index);
+  eventTree->Branch("tau_nstabledaug",  &m_tau_nstabledaug);
+  eventTree->Branch("tau_vispt",        &m_tau_vispt);
+  eventTree->Branch("stabledaug_pt",    &m_stabledaug_pt);
+  eventTree->Branch("stabledaug_eta",   &m_stabledaug_eta);
+  eventTree->Branch("stabledaug_phi",   &m_stabledaug_phi);
+  eventTree->Branch("stabledaug_mass",  &m_stabledaug_mass);
+  eventTree->Branch("stabledaug_id",    &m_stabledaug_id);
+
+}
+
+
+//
+// member functions
+//
+
+/*int GeneratorNtupleMaker::tauClass(std::vector<const reco::Candidate *>& stabledaughters, double& maxpt) {
+
+  // -999 means not classified
+  // 1 means electron
+  // 2 means muon
+  // 3 means had 1 prong
+  // 4 means had 3 prong
+  // 5 means had 5 prong
+  
+  maxpt=-999.9;
+
+  if (stabledaughters[1]->pdgId()==11||stabledaughters[1]->pdgId()==-11) return 1;
+  if (stabledaughters[1]->pdgId()==13||stabledaughters[1]->pdgId()==-13) return 2;
+    
+  int nprong=0;  
+
+  for (unsigned int i=0;i<stabledaughters.size();i++) {
+    if (stabledaughters[i]->pdgId()==211||stabledaughters[i]->pdgId()==-211) {
+      nprong++;
+      if (stabledaughters[i]->pt()>maxpt) maxpt=stabledaughters[i]->pt();
+    }
+  }
+
+  if (nprong==1) return 3;
+  if (nprong==3) return 4;
+  if (nprong==5) return 5;
+
+  return -999;
+
+}
+*/
+
+void GeneratorNtupleMaker::getStableDaughters(const reco::Candidate & p,std::vector<const reco::Candidate *>& stabledaughters){
+
+  int ndaug=p.numberOfDaughters();
+  
+  for(int j=0;j<ndaug;j++){
+    const reco::Candidate * daug = p.daughter(j);
+    if (daug->status()==1) {
+      stabledaughters.push_back(daug);
+    }
+    else {
+      getStableDaughters(*daug,stabledaughters);
+    }
+  }  
+
+}
+
+//////////
+// ANALYZE
+void GeneratorNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+
+  // clear variables
+  m_higgs_pt->clear();
+  m_higgs_eta->clear();
+  m_higgs_phi->clear();
+  //m_higgs_z->clear();
+  m_higgs_mass->clear();
+  m_higgs_id->clear();
+
+  m_tau_pt->clear();
+  m_tau_eta->clear();
+  m_tau_phi->clear();
+  //m_tau_x->clear();
+  //m_tau_y->clear();
+  //m_tau_z->clear();
+  m_tau_mass->clear();
+  m_tau_id->clear();
+
+  //m_tau_ndaug->clear();
+  m_taudecay_index->clear();
+  m_taudecay_vx->clear();
+  m_taudecay_vy->clear();
+  m_taudecay_vz->clear();
+  m_taudecayprod_id->clear();
+
+  m_stabledaug_index->clear();
+  m_tau_nstabledaug->clear();
+  m_tau_vispt->clear();
+  m_stabledaug_pt->clear();
+  m_stabledaug_eta->clear();
+  m_stabledaug_phi->clear();
+  m_stabledaug_mass->clear();
+  m_stabledaug_id->clear();
+
+  //-----------------------------------------------------------------------------------------------
+  // retrieve various containers
+  //-----------------------------------------------------------------------------------------------
+  
+  // MC truth association maps
+  //edm::Handle< TTTrackAssociationMap< Ref_PixelDigi_ > > MCTruthTTTrackHandle;
+  //iEvent.getByLabel("TTTrackAssociatorFromPixelDigis", "Level1TTTracks", MCTruthTTTrackHandle);
+  //edm::Handle< TTClusterAssociationMap< Ref_PixelDigi_ > > MCTruthTTClusterHandle;
+  //iEvent.getByLabel("TTClusterAssociatorFromPixelDigis", "ClusterAccepted", MCTruthTTClusterHandle);
+  //edm::Handle< TTStubAssociationMap< Ref_PixelDigi_ > > MCTruthTTStubHandle;
+  //iEvent.getByLabel("TTStubAssociatorFromPixelDigis", "StubAccepted", MCTruthTTStubHandle);
+
+  // tracking particles
+  //edm::Handle< std::vector< TrackingParticle > > TrackingParticleHandle;
+  //edm::Handle< std::vector< TrackingVertex > > TrackingVertexHandle;
+  //iEvent.getByLabel("mix", "MergedTrackTruth", TrackingParticleHandle);
+  //iEvent.getByLabel("mix", "MergedTrackTruth", TrackingVertexHandle);
+
+
+  //Get generator MC truth
+
+  Handle<GenParticleCollection> genParticles;
+  iEvent.getByLabel("genParticles", genParticles);
+
+  int nhiggs=0;
+
+  cout << "gen size: " << genParticles->size() << endl;
+
+  for(size_t i = 0; i < genParticles->size(); ++ i) {
+    const GenParticle & p = (*genParticles)[i];
+    int id = p.pdgId();
+    //int st = p.status();
+    if (id!=25) continue;
+    double tmp_eta=p.p4().eta();
+    double tmp_phi=p.p4().phi();
+    double tmp_pt=p.p4().pt();
+    //double tmp_z = p.vz();
+    double tmp_mass = p.mass();
+
+    if (p.daughter(0)->pdgId()==25) continue;  //skip if daughter is higgs
+    m_higgs_pt  -> push_back(tmp_pt);
+    m_higgs_eta -> push_back(tmp_eta);
+    m_higgs_phi -> push_back(tmp_phi);
+    //m_gen_z   -> push_back(tmp_z);
+    m_higgs_mass -> push_back(tmp_mass);
+    m_higgs_id  -> push_back(id);
+
+
+    int ndaug = p.numberOfDaughters();
+
+    for(int idaug=0;idaug<ndaug;idaug++) {
+      const reco::Candidate * daug = p.daughter(idaug);
+      //if (daug->pdgId()==25) continue;
+      m_tau_pt    -> push_back(daug->pt());
+      m_tau_eta   -> push_back(daug->eta());
+      m_tau_phi   -> push_back(daug->phi());
+      m_tau_id    -> push_back(daug->pdgId());
+      m_tau_mass  -> push_back(daug->mass());
+
+      //m_daug_ndaug -> push_back(daug->numberOfDaughters());
+
+      //loop over daugthers of Tau
+      //Decay vertex
+      int ntaudaug = daug->numberOfDaughters();
+      for (int itaudaug=0;itaudaug<ntaudaug;itaudaug++) {
+	const reco::Candidate * grddaug = daug->daughter(itaudaug);
+	int grd_id = grddaug->pdgId();
+	if (grd_id == 15 || grd_id == -15) continue;
+	
+	m_taudecay_index  -> push_back(idaug);  //from which tau
+	m_taudecay_vx     -> push_back(grddaug->vx());
+	m_taudecay_vy     -> push_back(grddaug->vy());
+	m_taudecay_vz     -> push_back(grddaug->vz());
+	m_taudecayprod_id -> push_back(grd_id);
+      }
+      
+      //Tau stable daughters
+      std::vector<const reco::Candidate *> stabledaughters;
+      XYZTLorentzVector p4vis; 
+
+      getStableDaughters(daug,stabledaughters);
+
+      m_tau_nstabledaug -> push_back(stabledaughters.size());
+      for (unsigned int j=0; j<stabledaughters.size();j++) {
+	m_stabledaug_index -> push_back(idaug);  //from which tau
+	m_stabledaug_pt    -> push_back(stabledaughters[j]->pt());
+	m_stabledaug_eta   -> push_back(stabledaughters[j]->eta());
+	m_stabledaug_phi   -> push_back(stabledaughters[j]->phi());
+	m_stabledaug_mass  -> push_back(stabledaughters[j]->mass());
+	m_stabledaug_id    -> push_back(stabledaughters[j]->pdgId());
+      }
+
+
+
+      //m_daug_vispt -> push_back(p4vis.Pt());
+
+    }
+
+    cout << "number of daughters = " << ndaug << endl;
+
+    nhiggs++;
+  }
+
+  eventTree->Fill();
+
+} //end of analyze()
+
+
+///////////////////////////
+// DEFINE THIS AS A PLUG-IN
+DEFINE_FWK_MODULE(GeneratorNtupleMaker);

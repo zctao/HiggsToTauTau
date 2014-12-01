@@ -1,0 +1,447 @@
+#include "TROOT.h"
+#include "TStyle.h"
+#include "TLatex.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TChain.h"
+#include "TBranch.h"
+#include "TLeaf.h"
+#include "TCanvas.h"
+#include "TLegend.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TF1.h"
+#include "TProfile.h"
+#include "TProfile2D.h"
+#include "TMath.h"
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+void GeneratorPlot() {
+  
+  //Read Ntuples
+  cout << "reading tree..." << endl;
+  TChain* tree = new TChain("GeneratorNtupleMaker/H2TauTauTree");
+  tree -> Add("RootFiles/13TeV/H2tautauNtuple_gg2H.root");
+
+  if (tree->GetEntries() == 0) {
+    cout << "File doesn't exsit or is empty, returning..." << endl;
+    return;
+  }
+
+  //____________________________________________________________________________
+  //define leafs & branches
+  vector<float>* higgs_pt;
+  vector<float>* higgs_eta;
+  vector<float>* higgs_phi;
+  
+  vector<float>* tau_pt;
+  vector<float>* tau_eta;
+  vector<float>* tau_phi;
+  
+  vector<int>*   tau_nprongs;
+  vector<int>*   tau_nprongsK;
+  
+  vector<float>* taudecay_vr;
+  vector<float>* taudecay_vz;
+  
+  vector<int>*   stabledaug_index;
+  vector<int>*   tau_nvisstabledaug;
+  vector<float>* tau_vispt;
+  vector<float>* stabledaug_pt;
+  vector<float>* stabledaug_eta;
+  vector<float>* stabledaug_phi;
+  vector<float>* stabledaug_mass;
+  vector<int>*   stabledaug_id;
+
+  vector<float>* recohiggs_mass;
+  
+
+  TBranch* b_higgs_pt;
+  TBranch* b_higgs_eta;
+  TBranch* b_higgs_phi;
+  
+  TBranch* b_tau_pt;
+  TBranch* b_tau_eta;
+  TBranch* b_tau_phi;
+  
+  TBranch* b_tau_nprongs;
+  TBranch* b_tau_nprongsK;
+  
+  TBranch* b_taudecay_vr;
+  TBranch* b_taudecay_vz;
+  
+  TBranch* b_stabledaug_index;
+  TBranch* b_tau_nvisstabledaug;
+  TBranch* b_tau_vispt;
+  TBranch* b_stabledaug_pt;
+  TBranch* b_stabledaug_eta;
+  TBranch* b_stabledaug_phi;
+  TBranch* b_stabledaug_mass;
+  TBranch* b_stabledaug_id;
+
+  TBranch* b_recohiggs_mass;
+
+  higgs_pt = 0;
+  higgs_eta = 0;
+  higgs_phi = 0;
+  
+  tau_pt = 0;
+  tau_eta = 0;
+  tau_phi = 0;
+  
+  tau_nprongs = 0;
+  tau_nprongsK = 0;
+  
+  taudecay_vr = 0;
+  taudecay_vz = 0;
+  
+  stabledaug_index = 0;
+  tau_nvisstabledaug = 0;
+  tau_vispt = 0;
+  stabledaug_pt = 0;
+  stabledaug_eta = 0;
+  stabledaug_phi = 0;
+  stabledaug_mass = 0;
+  stabledaug_id = 0;
+
+  recohiggs_mass = 0;
+
+
+  tree->SetBranchAddress("higgs_pt", &higgs_pt, &b_higgs_pt);
+  tree->SetBranchAddress("higgs_eta", &higgs_eta, &b_higgs_eta);
+  tree->SetBranchAddress("higgs_phi", &higgs_phi, &b_higgs_phi);
+  
+  tree->SetBranchAddress("tau_pt", &tau_pt, &b_tau_pt);
+  tree->SetBranchAddress("tau_eta", &tau_eta, &b_tau_eta);
+  tree->SetBranchAddress("tau_phi", &tau_phi, &b_tau_phi);
+  
+  tree->SetBranchAddress("tau_nprongs", &tau_nprongs, &b_tau_nprongs);
+  tree->SetBranchAddress("tau_nprongsK", &tau_nprongsK, &b_tau_nprongsK);
+  
+  tree->SetBranchAddress("taudecay_vr", &taudecay_vr, &b_taudecay_vr);
+  tree->SetBranchAddress("taudecay_vz", &taudecay_vz, &b_taudecay_vz);
+  
+  tree->SetBranchAddress("stabledaug_index", &stabledaug_index, &b_stabledaug_index);
+  tree->SetBranchAddress("tau_nvisstabledaug", &tau_nvisstabledaug, &b_tau_nvisstabledaug);
+  tree->SetBranchAddress("tau_vispt", &tau_vispt, &b_tau_vispt);
+  tree->SetBranchAddress("stabledaug_pt", &stabledaug_pt, &b_stabledaug_pt);
+  tree->SetBranchAddress("stabledaug_eta", &stabledaug_eta, &b_stabledaug_eta);
+  tree->SetBranchAddress("stabledaug_phi", &stabledaug_phi, &b_stabledaug_phi);
+  tree->SetBranchAddress("stabledaug_mass", &stabledaug_mass, &b_stabledaug_mass);
+  tree->SetBranchAddress("stabledaug_id", &stabledaug_id, &b_stabledaug_id);
+
+  tree->SetBranchAddress("recohiggs_mass", &recohiggs_mass, &b_recohiggs_mass);
+  
+  //___________________________________________________________________________________
+  // histogram
+  //___________________________________________________________________________________
+
+  // 'll' - two leptonic taus
+  // 'lh' - one leptonic tau one hadronic tau
+  // 'hh' - two hadronic taus
+
+  TH1F* h_higgs_pt_ll = new TH1F("higgs_pt_ll", ";Higgs p_{T} [GeV] (#tau_{l}#tau_{l});", 100, 0, 500);
+  TH1F* h_higgs_pt_lh = new TH1F("higgs_pt_lh", ";Higgs p_{T} [GeV] (#tau_{l}#tau_{h});", 100, 0, 500);
+  TH1F* h_higgs_pt_hh = new TH1F("higgs_pt_hh", ";Higgs p_{T} [GeV] (#tau_{h}#tau_{h});", 100, 0, 500);
+
+  TH1F* h_higgs_eta_ll = new TH1F("higgs_eta_ll", ";Higgs #eta (#tau_{l}#tau_{l});", 80, -10, 10);
+  TH1F* h_higgs_eta_lh = new TH1F("higgs_eta_lh", ";Higgs #eta (#tau_{l}#tau_{h});", 80, -10, 10);
+  TH1F* h_higgs_eta_hh = new TH1F("higgs_eta_hh", ";Higgs #eta (#tau_{h}#tau_{h});", 80, -10, 10);
+  
+  TH1F* h_higgs_phi_ll = new TH1F("higgs_phi_ll", ";Higgs #phi (#tau_{l}#tau_{l});", 70, -3.5, 3.5);
+  TH1F* h_higgs_phi_lh = new TH1F("higgs_phi_lh", ";Higgs #phi (#tau_{l}#tau_{h});", 70, -3.5, 3.5);
+  TH1F* h_higgs_phi_hh = new TH1F("higgs_phi_hh", ";Higgs #phi (#tau_{h}#tau_{h});", 70, -3.5, 3.5);
+
+  TH1F* h_tau_pt_l = new TH1F("higgs_pt_l", ";Leptonic #tau p_{T} [GeV];", 100, 0, 500);
+  TH1F* h_tau_pt_h = new TH1F("higgs_pt_h", ";Hadronic #tau p_{T} [GeV];", 100, 0, 500);
+  TH1F* h_tau_eta_l = new TH1F("tau_eta_l", ";Leptonic #tau #eta;", 80, -10, 10);
+  TH1F* h_tau_eta_h = new TH1F("tau_eta_h", ";Hadronic #tau #eta;", 80, -10, 10);
+  TH1F* h_tau_phi_l = new TH1F("tau_phi_l", ";Leptonic #tau #phi;", 70, -3.5, 3.5);
+  TH1F* h_tau_phi_h = new TH1F("tau_phi_h", ";Hadronic #tau #phi;", 70, -3.5, 3.5);
+  
+  TH1F* h_taudecay_vr_l = new TH1F("taudecay_vr_l", ";Leptonic #tau decay v_{r};", 40, 0, 2.);
+  TH1F* h_taudecay_vr_h = new TH1F("taudecay_vr_h", ";Hadronic #tau decay v_{r};", 40, 0, 2.);
+  TH1F* h_taudecay_vz_l = new TH1F("taudecay_vz_l", ";Leptonic #tau decay v_{z};", 40, -2., 2.);
+  TH1F* h_taudecay_vz_h = new TH1F("taudecay_vz_h", ";Hadronic #tau decay v_{z};", 40, -2., 2.);
+
+  TH1F* h_tauvispt_l = new TH1F("tauvispt_l", ";Leptonic #tau visible p_{T} [GeV];", 50, 0., 200.);
+  TH1F* h_tauvispt_h = new TH1F("tauvispt_h", ";Hadronic #tau visible p_{T} [GeV];", 50, 0., 200.);
+
+  TH1F* h_stabledaug_pt_l = new TH1F("stabledaug_pt_l", ";Leptonic #tau stable daughters p_{T} [GeV];", 50, 0., 200.);
+  TH1F* h_stabledaug_pt_h = new TH1F("stabledaug_pt_h", ";Hadronic #tau stable daughters p_{T} [GeV];", 50, 0., 200.);
+  TH1F* h_stabledaug_eta_l = new TH1F("stabledaug_eta_l", ";Leptonic #tau stable daughters #eta;", 80, -10., 10.);
+  TH1F* h_stabledaug_eta_h = new TH1F("stabledaug_eta_h", ";Hadronic #tau stable daughters #eta;", 80, -10., 10.);
+  TH1F* h_stabledaug_phi_l = new TH1F("stabledaug_phi_l", ";Leptonic #tau stable daughters #phi;", 70, -3.5, 3.5);
+  TH1F* h_stabledaug_phi_h = new TH1F("stabledaug_phi_h", ";Hadronic #tau stable daughters #phi;", 70, -3.5, 3.5);
+
+  TH1F* h_recohiggs_mass_ll = new TH1F("recohiggs_mass_ll", "Reco higgs mass (#tau_{l}#tau_{l})", 100, 0, 200);
+  TH1F* h_recohiggs_mass_lh = new TH1F("recohiggs_mass_lh", "Reco higgs mass (#tau_{l}#tau_{h})", 100, 0, 200);
+  TH1F* h_recohiggs_mass_hh = new TH1F("recohiggs_mass_hh", "Reco higgs mass (#tau_{h}#tau_{h})", 100, 0, 200);
+  TH1F* h_recohiggs_mass_nop0 = new TH1F("recohiggs_mass_nop0", "Reco higgs mass (w/o events with #pi^{0} in final states)", 100, 0, 200);
+  
+  TH1F* h_tauptfromvertex = new TH1F("tauptfromvertex", ";#tau p_{T} calculated from decay vertex[GeV];", 100,0,500);
+
+
+  // ----------------------------------------------------------------------------------------------------------------
+  //        * * * * *     S T A R T   O F   A C T U A L   R U N N I N G   O N   E V E N T S     * * * * *
+  // ----------------------------------------------------------------------------------------------------------------
+
+  const double ttau = 2.906*pow(10,-13); //(s)tau mean lifetime
+  const double mtau = 1.777; //tau mass (GeV)
+  const double speedoflight = 3*pow(10,10);  //(cm/s)
+
+  int nevt = tree->GetEntries();
+  cout << "number of events = " << nevt << endl;
+
+
+  // ----------------------------------------------------------------------------------------------------------------
+  // event loop
+  for (int i=0; i<nevt; i++) {
+    cout << ">>>>>>>>> reading event #" << i << " <<<<<<<<<<" << endl;
+    tree->GetEntry(i,0);
+    //cout << "flag" << endl;   
+    
+    int nHadronicTau = 0;
+    bool FoundPi0 = false;
+    
+    //tau loop
+    for (int itau=0; itau<2; itau++) {
+      cout << "processing tau #" << itau+1 <<" ..." << endl;
+      bool IsHadronic = false;
+      if (tau_nprongsK->at(itau)>0) {
+	nHadronicTau++;
+	IsHadronic = true;
+      }
+
+      if (IsHadronic) {
+	h_tau_pt_h  -> Fill(tau_pt->at(itau));
+	h_tau_eta_h -> Fill(tau_eta->at(itau));
+	h_tau_phi_h -> Fill(tau_phi->at(itau));
+	h_tauvispt_h -> Fill(tau_vispt->at(itau));
+      }
+      else {
+	h_tau_pt_l  -> Fill(tau_pt->at(itau));
+	h_tau_eta_l -> Fill(tau_eta->at(itau));
+	h_tau_phi_l -> Fill(tau_phi->at(itau));
+	h_tauvispt_l -> Fill(tau_vispt->at(itau));
+      }
+
+      //decay vertex loop
+      cout << "processing tau decay vertex ..." << endl;
+      if (IsHadronic) {
+	h_taudecay_vr_h -> Fill(taudecay_vr->at(itau));
+	h_taudecay_vz_h -> Fill(taudecay_vz->at(itau));
+      }
+      else {
+	h_taudecay_vr_l -> Fill(taudecay_vr->at(itau));
+	h_taudecay_vz_l -> Fill(taudecay_vz->at(itau));
+      }
+
+      double ptfromvr = taudecay_vr->at(itau)*mtau/(ttau*speedoflight);
+      h_tauptfromvertex -> Fill(ptfromvr);
+
+      //stable daughter loop
+      //cout << "processing tau stable daughters ..." << endl;
+      for (int isdaug=0; isdaug<(int)stabledaug_pt->size(); isdaug++) {
+	if (stabledaug_index->at(isdaug)!=itau) continue;
+	if (IsHadronic) {
+	  h_stabledaug_pt_h  -> Fill(stabledaug_pt->at(isdaug));
+	  h_stabledaug_eta_h -> Fill(stabledaug_eta->at(isdaug));
+	  h_stabledaug_phi_h -> Fill(stabledaug_phi->at(isdaug));
+	}
+	else {
+	  h_stabledaug_pt_l  -> Fill(stabledaug_pt->at(isdaug));
+	  h_stabledaug_eta_l -> Fill(stabledaug_eta->at(isdaug));
+	  h_stabledaug_phi_l -> Fill(stabledaug_phi->at(isdaug));
+	}
+
+	if (stabledaug_id->at(isdaug) == 111) FoundPi0 = true;
+      }
+
+    } //end of tau loop
+
+    if (nHadronicTau == 0) {
+      h_higgs_pt_ll -> Fill(higgs_pt->at(0));
+      h_higgs_eta_ll -> Fill(higgs_eta->at(0));
+      h_higgs_phi_ll -> Fill(higgs_phi->at(0));
+      h_recohiggs_mass_ll -> Fill(recohiggs_mass->at(0));
+    }
+    else if (nHadronicTau == 1) {
+      h_higgs_pt_lh -> Fill(higgs_pt->at(0));
+      h_higgs_eta_lh -> Fill(higgs_eta->at(0));
+      h_higgs_phi_lh -> Fill(higgs_phi->at(0));
+      h_recohiggs_mass_lh -> Fill(recohiggs_mass->at(0));
+    }
+    else if (nHadronicTau == 2) {
+      h_higgs_pt_hh -> Fill(higgs_pt->at(0));
+      h_higgs_eta_hh -> Fill(higgs_eta->at(0));
+      h_higgs_phi_hh -> Fill(higgs_phi->at(0));
+      h_recohiggs_mass_hh -> Fill(recohiggs_mass->at(0));
+    } 
+    else cout << "Oops...";
+
+    //reco higgs mass without pi0 events
+    if (!FoundPi0) h_recohiggs_mass_nop0 -> Fill(recohiggs_mass->at(0));
+    
+
+  } //end of event loop
+
+  //Draw and save plots
+  TCanvas c;
+  const TString Ecm = "13TeV";
+  const TString type = "gg2H";
+
+  h_higgs_pt_hh -> SetLineColor(2);
+  h_higgs_pt_lh -> SetLineColor(3);
+  h_higgs_pt_ll -> SetLineColor(4);
+  h_higgs_pt_lh -> Draw();
+  h_higgs_pt_hh -> Draw("same");
+  h_higgs_pt_ll -> Draw("same");
+  TLegend* leg_higgs_pt = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_higgs_pt -> AddEntry(h_higgs_pt_hh, "#tau_{h}#tau_{h}","l");
+  leg_higgs_pt -> AddEntry(h_higgs_pt_lh, "#tau_{l}#tau_{h}","l");
+  leg_higgs_pt -> AddEntry(h_higgs_pt_ll, "#tau_{l}#tau_{l}","l");
+  leg_higgs_pt -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/higgs_pt.png");
+
+  h_higgs_eta_hh -> SetLineColor(2);
+  h_higgs_eta_lh -> SetLineColor(3);
+  h_higgs_eta_ll -> SetLineColor(4);
+  h_higgs_eta_lh -> Draw();
+  h_higgs_eta_hh -> Draw("same");
+  h_higgs_eta_ll -> Draw("same");
+  TLegend* leg_higgs_eta = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_higgs_eta -> AddEntry(h_higgs_eta_hh, "#tau_{h}#tau_{h}","l");
+  leg_higgs_eta -> AddEntry(h_higgs_eta_lh, "#tau_{l}#tau_{h}","l");
+  leg_higgs_eta -> AddEntry(h_higgs_eta_ll, "#tau_{l}#tau_{l}","l");
+  leg_higgs_eta -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/higgs_eta.png");
+
+  h_higgs_phi_hh -> SetLineColor(2);
+  h_higgs_phi_lh -> SetLineColor(3);
+  h_higgs_phi_ll -> SetLineColor(4);
+  h_higgs_phi_lh -> Draw();
+  h_higgs_phi_hh -> Draw("same");
+  h_higgs_phi_ll -> Draw("same");
+  TLegend* leg_higgs_phi = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_higgs_phi -> AddEntry(h_higgs_phi_hh, "#tau_{h}#tau_{h}","l");
+  leg_higgs_phi -> AddEntry(h_higgs_phi_lh, "#tau_{l}#tau_{h}","l");
+  leg_higgs_phi -> AddEntry(h_higgs_phi_ll, "#tau_{l}#tau_{l}","l");
+  leg_higgs_phi -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/higgs_phi.png");
+
+  h_tau_pt_h -> SetLineColor(2);
+  h_tau_pt_l -> SetLineColor(4);
+  h_tau_pt_h -> Draw();
+  h_tau_pt_l -> Draw("same");
+  TLegend* leg_tau_pt = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_tau_pt -> AddEntry(h_tau_pt_h, "Hadronic","l");
+  leg_tau_pt -> AddEntry(h_tau_pt_l, "Leptonic","l");
+  leg_tau_pt -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/tau_pt.png");
+
+  h_tau_eta_h -> SetLineColor(2);
+  h_tau_eta_l -> SetLineColor(4);
+  h_tau_eta_h -> Draw();
+  h_tau_eta_l -> Draw("same");
+  TLegend* leg_tau_eta = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_tau_eta -> AddEntry(h_tau_eta_h, "Hadronic","l");
+  leg_tau_eta -> AddEntry(h_tau_eta_l, "Leptonic","l");
+  leg_tau_eta -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/tau_eta.png");
+
+  h_tau_phi_h -> SetLineColor(2);
+  h_tau_phi_l -> SetLineColor(4);
+  h_tau_phi_h -> Draw();
+  h_tau_phi_l -> Draw("same");
+  TLegend* leg_tau_phi = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_tau_phi -> AddEntry(h_tau_phi_h, "Hadronic","l");
+  leg_tau_phi -> AddEntry(h_tau_phi_l, "Leptonic","l");
+  leg_tau_phi -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/tau_phi.png");
+
+  h_taudecay_vr_h -> SetLineColor(2);
+  h_taudecay_vr_l -> SetLineColor(4);
+  h_taudecay_vr_h -> Draw();
+  h_taudecay_vr_l -> Draw("same");
+  TLegend* leg_taudecay_vr = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_taudecay_vr -> AddEntry(h_taudecay_vr_h, "Hadronic","l");
+  leg_taudecay_vr -> AddEntry(h_taudecay_vr_l, "Leptonic","l");
+  leg_taudecay_vr -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/taudecay_vr.png");
+
+  h_taudecay_vz_h -> SetLineColor(2);
+  h_taudecay_vz_l -> SetLineColor(4);
+  h_taudecay_vz_h -> Draw();
+  h_taudecay_vz_l -> Draw("same");
+  TLegend* leg_taudecay_vz = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_taudecay_vz -> AddEntry(h_taudecay_vz_h, "Hadronic","l");
+  leg_taudecay_vz -> AddEntry(h_taudecay_vz_l, "Leptonic","l");
+  leg_taudecay_vz -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/taudecay_vz.png");
+
+  h_tauvispt_h -> SetLineColor(2);
+  h_tauvispt_l -> SetLineColor(4);
+  h_tauvispt_h -> Draw();
+  h_tauvispt_l -> Draw("same");
+  TLegend* leg_tauvispt = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_tauvispt -> AddEntry(h_tauvispt_h, "Hadronic","l");
+  leg_tauvispt -> AddEntry(h_tauvispt_l, "Leptonic","l");
+  leg_tauvispt -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/tauvispt.png");
+
+  h_stabledaug_pt_h -> SetLineColor(2);
+  h_stabledaug_pt_l -> SetLineColor(4);
+  h_stabledaug_pt_h -> Draw();
+  h_stabledaug_pt_l -> Draw("same");
+  TLegend* leg_stabledaug_pt = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_stabledaug_pt -> AddEntry(h_stabledaug_pt_h, "Hadronic","l");
+  leg_stabledaug_pt -> AddEntry(h_stabledaug_pt_l, "Leptonic","l");
+  leg_stabledaug_pt -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/stabledaug_pt.png");
+
+  h_stabledaug_eta_h -> SetLineColor(2);
+  h_stabledaug_eta_l -> SetLineColor(4);
+  h_stabledaug_eta_h -> Draw();
+  h_stabledaug_eta_l -> Draw("same");
+  TLegend* leg_stabledaug_eta = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_stabledaug_eta -> AddEntry(h_stabledaug_eta_h, "Hadronic","l");
+  leg_stabledaug_eta -> AddEntry(h_stabledaug_eta_l, "Leptonic","l");
+  leg_stabledaug_eta -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/stabledaug_eta.png");
+
+  h_stabledaug_phi_h -> SetLineColor(2);
+  h_stabledaug_phi_l -> SetLineColor(4);
+  h_stabledaug_phi_h -> Draw();
+  h_stabledaug_phi_l -> Draw("same");
+  TLegend* leg_stabledaug_phi = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_stabledaug_phi -> AddEntry(h_stabledaug_eta_h, "Hadronic","l");
+  leg_stabledaug_phi -> AddEntry(h_stabledaug_eta_l, "Leptonic","l");
+  leg_stabledaug_phi -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/stabledaug_phi.png");
+
+  h_recohiggs_mass_hh -> SetLineColor(2);
+  h_recohiggs_mass_lh -> SetLineColor(3);
+  h_recohiggs_mass_ll -> SetLineColor(4);
+  h_recohiggs_mass_lh -> Draw();
+  h_recohiggs_mass_hh -> Draw("same");
+  h_recohiggs_mass_ll -> Draw("same");
+  TLegend* leg_recohiggs_mass = new TLegend(0.7, 0.6, 0.89, 0.89);
+  leg_recohiggs_mass -> AddEntry(h_recohiggs_mass_hh, "#tau_{h}#tau_{h}","l");
+  leg_recohiggs_mass -> AddEntry(h_recohiggs_mass_lh, "#tau_{l}#tau_{h}","l");
+  leg_recohiggs_mass -> AddEntry(h_recohiggs_mass_ll, "#tau_{l}#tau_{l}","l");
+  leg_recohiggs_mass -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/recohiggs_mass.png");
+  
+  h_recohiggs_mass_nop0 -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/recohiggs_mass_nop0.png");
+
+  h_tauptfromvertex -> Draw();
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/tauptfromvertex.png");
+
+}

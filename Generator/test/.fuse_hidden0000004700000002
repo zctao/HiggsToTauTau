@@ -1,0 +1,378 @@
+/////////////////////////////////////////////////////////////////////////
+//                                                                     //
+//  Analyzer for making mini-ntuple for HiggstoTauTau GEN level events //
+//                                                                     //
+/////////////////////////////////////////////////////////////////////////
+
+////////////////////
+// FRAMEWORK HEADERS
+#include "FWCore/PluginManager/interface/ModuleDef.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+
+///////////////////////
+// DATA FORMATS HEADERS
+#include "DataFormats/Common/interface/Handle.h"
+#include "DataFormats/Common/interface/EDProduct.h"
+#include "DataFormats/Common/interface/Ref.h"
+
+//#include "DataFormats/L1TrackTrigger/interface/TTTypes.h"
+//#include "DataFormats/L1TrackTrigger/interface/TTCluster.h"
+//#include "DataFormats/L1TrackTrigger/interface/TTStub.h"
+//#include "DataFormats/L1TrackTrigger/interface/TTTrack.h"
+//#include "SimDataFormats/TrackingAnalysis/interface/TrackingParticle.h"
+//#include "SimDataFormats/TrackingAnalysis/interface/TrackingVertex.h"
+//#include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
+//#include "SimDataFormats/TrackingHit/interface/PSimHit.h"
+//#include "SimTracker/TrackTriggerAssociation/interface/TTClusterAssociationMap.h"
+//#include "SimTracker/TrackTriggerAssociation/interface/TTStubAssociationMap.h"
+//#include "SimTracker/TrackTriggerAssociation/interface/TTTrackAssociationMap.h"
+//#include "Geometry/Records/interface/StackedTrackerGeometryRecord.h"
+//#include "Geometry/TrackerGeometryBuilder/interface/StackedTrackerGeometry.h"
+//#include "DataFormats/L1TrackTrigger/interface/L1TkEmParticle.h"
+//#include "DataFormats/L1TrackTrigger/interface/L1TkEmParticleFwd.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
+#include "DataFormats/Candidate/interface/Candidate.h"
+//#include "SimDataFormats/SLHC/interface/L1EGCrystalCluster.h"
+#include "DataFormats/Math/interface/LorentzVector.h"
+
+////////////////
+// PHYSICS TOOLS
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+///////////////
+// ROOT HEADERS
+#include <TROOT.h>
+#include <TCanvas.h>
+#include <TTree.h>
+#include <TFile.h>
+#include <TF1.h>
+#include <TH2F.h>
+#include <TH1F.h>
+
+//////////////
+// STD HEADERS
+#include <memory>
+#include <string>
+#include <iostream>
+
+//////////////
+// NAMESPACES
+using namespace std;
+using namespace edm;
+using namespace reco;
+using namespace math;
+
+//////////////////////////////
+//                          //
+//     CLASS DEFINITION     //
+//                          //
+//////////////////////////////
+
+class GeneratorNtupleMaker : public edm::EDAnalyzer
+{
+public:
+
+  // Constructor/destructor
+  explicit GeneratorNtupleMaker(const edm::ParameterSet& iConfig);
+  virtual ~GeneratorNtupleMaker();
+
+  // Mandatory methods
+  virtual void beginJob();
+  virtual void endJob();
+  virtual void analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup);
+  
+protected:
+  
+private:
+  
+  // Containers of parameters passed by python configuration file
+  edm::ParameterSet config; 
+  
+  int MyProcess;
+
+  //-----------------------------------------------------------------------------------------------
+  // tree & branches for mini-ntuple
+
+  TTree* eventTree;
+
+  // GEN Objects
+  std::vector<float>* m_higgs_pt;
+  std::vector<float>* m_higgs_eta;
+  std::vector<float>* m_higgs_phi;
+  //std::vector<float>* m_higgs_z;   zero
+  std::vector<float>* m_higgs_mass;
+  std::vector<int>*   m_higgs_id;
+
+  std::vector<float>* m_tau_pt;
+  std::vector<float>* m_tau_eta;
+  std::vector<float>* m_tau_phi;
+  //std::vector<float>* m_tau_vx;
+  //std::vector<float>* m_tau_vy;
+  //std::vector<float>* m_tau_vz;
+  std::vector<float>* m_tau_mass;
+  std::vector<int>*   m_tau_id;
+
+  std::vector<int>*   m_tau_ndaug;
+  std::vector<float>* m_taudecay_vx;
+  std::vector<float>* m_taudecay_vy;
+  std::vector<float>* m_taudecay_vz;
+  std::vector<int>*   m_taudecay_id;
+
+  std::vector<int>*   m_tau_nstabledaug;
+  std::vector<float>* m_tau_vispt;
+  std::vector<float>* m_stabledaug_pt;
+  std::vector<float>* m_stabledaug_eta;
+  std::vector<float>* m_stabledaug_phi;
+  std::vector<float>* m_stabledaug_mass;
+  std::vector<int>  * m_stabledaug_id;
+};
+
+
+//////////////////////////////////
+//                              //
+//     CLASS IMPLEMENTATION     //
+//                              //
+//////////////////////////////////
+
+//////////////
+// CONSTRUCTOR
+GeneratorNtupleMaker::GeneratorNtupleMaker(edm::ParameterSet const& iConfig) : 
+  config(iConfig)
+{
+
+  MyProcess = iConfig.getParameter< int >("MyProcess");
+  
+}
+
+/////////////
+// DESTRUCTOR
+GeneratorNtupleMaker::~GeneratorNtupleMaker()
+{
+}  
+
+//////////
+// END JOB
+void GeneratorNtupleMaker::endJob()
+{
+  // things to be done at the exit of the event Loop
+  cerr << "GeneratorNtupleMaker::endJob" << endl;
+
+}
+
+////////////
+// BEGIN JOB
+void GeneratorNtupleMaker::beginJob()
+{
+
+  // things to be done before entering the event Loop
+  cerr << "GeneratorNtupleMaker::beginJob" << endl;
+
+
+  //-----------------------------------------------------------------------------------------------
+  // book histograms / make ntuple
+  edm::Service<TFileService> fs;
+
+
+  // initilize
+  m_gen_pt   = new std::vector<float>;
+  m_gen_eta  = new std::vector<float>;
+  m_gen_phi  = new std::vector<float>;
+  m_gen_z    = new std::vector<float>;
+  m_gen_mass = new std::vector<float>;
+  m_gen_id   = new std::vector<int>;
+
+  m_daug_pt   = new std::vector<float>;
+  m_daug_eta  = new std::vector<float>;
+  m_daug_phi  = new std::vector<float>;
+  m_daug_x    = new std::vector<float>;
+  m_daug_y    = new std::vector<float>;
+  m_daug_z    = new std::vector<float>;
+  m_daug_mass    = new std::vector<float>;
+  m_daug_id   = new std::vector<int>; 
+  m_daug_ndaug = new std::vector<int>;
+  m_daug_vispt = new std::vector<float>;
+  
+  m_grddaug_x      = new std::vector<float>;
+  m_grddaug_y      = new std::vector<float>;
+  m_grddaug_z      = new std::vector<float>;
+  m_grddaug_id     = new std::vector<int>;
+
+  
+  // ntuple
+  eventTree = fs->make<TTree>("H2TauTauTree", "Event tree");
+
+  eventTree->Branch("gen_pt",      &m_gen_pt);
+  eventTree->Branch("gen_eta",     &m_gen_eta);
+  eventTree->Branch("gen_phi",     &m_gen_phi);
+  eventTree->Branch("gen_z",       &m_gen_z);
+  eventTree->Branch("gen_mass",    &m_gen_mass);
+  eventTree->Branch("gen_id",      &m_gen_id);
+
+  eventTree->Branch("daug_pt",      &m_daug_pt);
+  eventTree->Branch("daug_eta",     &m_daug_eta);
+  eventTree->Branch("daug_phi",     &m_daug_phi);
+  eventTree->Branch("daug_x",       &m_daug_x);
+  eventTree->Branch("daug_y",       &m_daug_y);
+  eventTree->Branch("daug_z",       &m_daug_z);
+  eventTree->Branch("daug_mass",    &m_daug_mass);
+  eventTree->Branch("daug_id",      &m_daug_id);
+  eventTree->Branch("daug_ndaug",   &m_daug_ndaug);
+  eventTree->Branch("daug_vispt",   &m_daug_vispt);
+
+  eventTree->Branch("grddaug_x",      &m_grddaug_x);
+  eventTree->Branch("grddaug_y",      &m_grddaug_y);
+  eventTree->Branch("grddaug_z",      &m_grddaug_z);
+  eventTree->Branch("grddaug_id",     &m_grddaug_id);
+
+}
+
+
+//
+// member functions
+//
+
+
+//////////
+// ANALYZE
+void GeneratorNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+
+  // clear variables
+  m_gen_pt->clear();
+  m_gen_eta->clear();
+  m_gen_phi->clear();
+  m_gen_z->clear();
+  m_gen_mass->clear();
+  m_gen_id->clear();
+
+  m_daug_pt->clear();
+  m_daug_eta->clear();
+  m_daug_phi->clear();
+  m_daug_x->clear();
+  m_daug_y->clear();
+  m_daug_z->clear();
+  m_daug_mass->clear();
+  m_daug_id->clear();
+  m_daug_ndaug->clear();
+  m_daug_vispt->clear();
+
+  m_grddaug_x->clear();
+  m_grddaug_y->clear();
+  m_grddaug_z->clear();
+  m_grddaug_id->clear();
+
+  //-----------------------------------------------------------------------------------------------
+  // retrieve various containers
+  //-----------------------------------------------------------------------------------------------
+  
+  // MC truth association maps
+  //edm::Handle< TTTrackAssociationMap< Ref_PixelDigi_ > > MCTruthTTTrackHandle;
+  //iEvent.getByLabel("TTTrackAssociatorFromPixelDigis", "Level1TTTracks", MCTruthTTTrackHandle);
+  //edm::Handle< TTClusterAssociationMap< Ref_PixelDigi_ > > MCTruthTTClusterHandle;
+  //iEvent.getByLabel("TTClusterAssociatorFromPixelDigis", "ClusterAccepted", MCTruthTTClusterHandle);
+  //edm::Handle< TTStubAssociationMap< Ref_PixelDigi_ > > MCTruthTTStubHandle;
+  //iEvent.getByLabel("TTStubAssociatorFromPixelDigis", "StubAccepted", MCTruthTTStubHandle);
+
+  // tracking particles
+  //edm::Handle< std::vector< TrackingParticle > > TrackingParticleHandle;
+  //edm::Handle< std::vector< TrackingVertex > > TrackingVertexHandle;
+  //iEvent.getByLabel("mix", "MergedTrackTruth", TrackingParticleHandle);
+  //iEvent.getByLabel("mix", "MergedTrackTruth", TrackingVertexHandle);
+
+
+  //Get generator MC truth
+
+  Handle<GenParticleCollection> genParticles;
+  iEvent.getByLabel("genParticles", genParticles);
+
+  int nhiggs=0;
+
+  cout << "gen size: " << genParticles->size() << endl;
+
+  for(size_t i = 0; i < genParticles->size(); ++ i) {
+    const GenParticle & p = (*genParticles)[i];
+    int id = p.pdgId();
+    //int st = p.status();
+    if (id!=25) continue;
+    double tmp_eta=p.p4().eta();
+    double tmp_phi=p.p4().phi();
+    double tmp_pt=p.p4().pt();
+    double tmp_z = p.vz();
+    double tmp_mass = p.mass();
+
+    if (p.daughter(0)->pdgId()==25) continue;  //skip if daughter is higgs
+    m_gen_pt  -> push_back(tmp_pt);
+    m_gen_eta -> push_back(tmp_eta);
+    m_gen_phi -> push_back(tmp_phi);
+    m_gen_z   -> push_back(tmp_z);
+    m_gen_mass -> push_back(tmp_mass);
+    m_gen_id  -> push_back(id);
+  
+    //int nmother=p.numberOfMothers();
+    //if (nmother!=1) continue;
+    //if (p.mother(0)->pdgId()!=25) continue;
+
+    //double vx = p.vx(), vy = p.vy(), vz = p.vz();
+
+    //std::cout << "vertex : "<<vx<<" "<<vy<<" "<<vz<<std::endl;
+
+    //std::cout << "i id st eta: "<<i<<" "<<id<<" "<<st<<" "<<eta<<std::endl;
+
+
+    int ndaug = p.numberOfDaughters();
+
+    for(int idaug=0;idaug<ndaug;idaug++) {
+      const reco::Candidate * daug = p.daughter(idaug);
+      //if (daug->pdgId()==25) continue;
+      m_daug_pt    -> push_back(daug->pt());
+      m_daug_eta   -> push_back(daug->eta());
+      m_daug_phi   -> push_back(daug->phi());
+      m_daug_id    -> push_back(daug->pdgId());
+      m_daug_mass  -> push_back(daug->mass());
+      m_daug_x     -> push_back(daug->vx());
+      m_daug_y     -> push_back(daug->vy());
+      m_daug_z     -> push_back(daug->vz());
+      m_daug_ndaug -> push_back(daug->numberOfDaughters());
+
+      //loop over daugthers of the daughter
+      XYZTLorentzVector p4vis; 
+      int nndaug = daug->numberOfDaughters();
+      for (int jdaug=0;jdaug<nndaug;jdaug++) {
+	const reco::Candidate * grddaug = daug->daughter(jdaug);
+	int grd_id = grddaug->pdgId();
+	if (grd_id == 15 || grd_id == -15) continue;
+	if (grd_id != 12 && grd_id != -12 && grd_id != 14 && grd_id != -14 && grd_id != 16 && grd_id != -16) {
+	  p4vis += XYZTLorentzVector(grddaug->px(),grddaug->py(),grddaug->pz(),grddaug->energy());
+	}
+	m_grddaug_x  -> push_back(grddaug->vx());
+	m_grddaug_y  -> push_back(grddaug->vy());
+	m_grddaug_z  -> push_back(grddaug->vz());
+	m_grddaug_id -> push_back(grd_id);
+      }
+      
+      m_daug_vispt -> push_back(p4vis.Pt());
+
+    }
+
+    cout << "number of daughters = " << ndaug << endl;
+
+    nhiggs++;
+  }
+
+  eventTree->Fill();
+
+} //end of analyze()
+
+
+///////////////////////////
+// DEFINE THIS AS A PLUG-IN
+DEFINE_FWK_MODULE(GeneratorNtupleMaker);

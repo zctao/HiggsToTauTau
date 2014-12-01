@@ -1,0 +1,41 @@
+<environment>
+  <library   file="*.cc" name="ConfigurationGeneratorTests">
+    <flags   EDM_PLUGIN="1"/>
+    <use   name="FWCore/Framework"/>
+    <use   name="FWCore/PluginManager"/>
+    <use   name="FWCore/ParameterSet"/>
+
+    <use   name="CondFormats/Alignment"/>
+  
+
+    <use   name="DataFormats/L1TrackTrigger"/>
+
+    <use   name="root"/>
+
+    <use   name="heppdt"/>
+    <use   name="SimTracker/TrackerHitAssociation"/>
+    <use   name="DataFormats/Common"/>
+    <use   name="DataFormats/TrackerRecHit2D"/>
+    <use   name="SimDataFormats/Vertex"/>
+    <use   name="SimDataFormats/TrackingHit"/>
+    <use   name="SimDataFormats/CrossingFrame"/>
+    <use   name="SimDataFormats/TrackingAnalysis"/>
+    <use   name="RecoLocalTracker/SiPixelRecHits"/>
+    <use   name="PhysicsTools/UtilAlgos"/>
+    <use   name="FWCore/ServiceRegistry"/>
+    <use   name="clhep"/>
+ 
+
+    <use   name="PhysicsTools/CandUtils"/>
+    <use   name="FWCore/MessageLogger"/>
+ 
+    <use   name="DataFormats/HepMCCandidate"/>
+
+    <use   name="CondFormats/DataRecord"/>
+    <use   name="RecoTauTag/TauTagTools"/>
+
+
+    <use   name="CommonTools/UtilAlgos"/>
+    <flags   CXXFLAGS="-g -O0"/>
+  </library>
+</environment>

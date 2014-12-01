@@ -1,0 +1,2 @@
+cmsRun Py8_H2tautau_tauola_cfg.py > log
+Change Higgs production mode and output file directory accordingly.
