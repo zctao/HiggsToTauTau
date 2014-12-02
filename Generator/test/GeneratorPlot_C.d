@@ -86,5 +86,7 @@
 ./GeneratorPlot_C.so: /afs/cern.ch/cms/slc6_amd64_gcc472/lcg/root/5.34.07-cms/include/TProfile2D.h
 ./GeneratorPlot_C.so: /afs/cern.ch/cms/slc6_amd64_gcc472/lcg/root/5.34.07-cms/include/TMath.h
 ./GeneratorPlot_C.so: /afs/cern.ch/cms/slc6_amd64_gcc472/lcg/root/5.34.07-cms/include/TError.h
+./GeneratorPlot_C.so: /afs/cern.ch/cms/slc6_amd64_gcc472/lcg/root/5.34.07-cms/include/TPaveText.h
+./GeneratorPlot_C.so: /afs/cern.ch/cms/slc6_amd64_gcc472/lcg/root/5.34.07-cms/include/TLine.h
 ./GeneratorPlot_C.so: /afs/cern.ch/cms/slc6_amd64_gcc472/lcg/root/5.34.07-cms/include/cintdictversion.h /afs/cern.ch/cms/slc6_amd64_gcc472/lcg/root/5.34.07-cms/include/RVersion.h
 GeneratorPlot_C__ROOTBUILDVERSION= 5.34/07

@@ -14,6 +14,7 @@
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TMath.h"
+#include "TPaveText.h"
 
 #include <iostream>
 #include <string>
@@ -145,55 +146,55 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   // 'lh' - one leptonic tau one hadronic tau
   // 'hh' - two hadronic taus
 
-  TH1F* h_higgs_pt_ll = new TH1F("higgs_pt_ll", ";Higgs p_{T} [GeV] (#tau_{l}#tau_{l});", 100, 0, 500);
-  TH1F* h_higgs_pt_lh = new TH1F("higgs_pt_lh", ";Higgs p_{T} [GeV] (#tau_{l}#tau_{h});", 100, 0, 500);
-  TH1F* h_higgs_pt_hh = new TH1F("higgs_pt_hh", ";Higgs p_{T} [GeV] (#tau_{h}#tau_{h});", 100, 0, 500);
+  TH1F* h_higgs_pt_ll = new TH1F("higgs_pt_ll", ";Higgs p_{T} [GeV]; ("+type+"@"+Ecm+")", 100, 0, 500);
+  TH1F* h_higgs_pt_lh = new TH1F("higgs_pt_lh", ";Higgs p_{T} [GeV]; ("+type+"@"+Ecm+")", 100, 0, 500);
+  TH1F* h_higgs_pt_hh = new TH1F("higgs_pt_hh", ";Higgs p_{T} [GeV]; ("+type+"@"+Ecm+")", 100, 0, 500);
 
-  TH1F* h_higgs_eta_ll = new TH1F("higgs_eta_ll", ";Higgs #eta (#tau_{l}#tau_{l});", 80, -10, 10);
-  TH1F* h_higgs_eta_lh = new TH1F("higgs_eta_lh", ";Higgs #eta (#tau_{l}#tau_{h});", 80, -10, 10);
-  TH1F* h_higgs_eta_hh = new TH1F("higgs_eta_hh", ";Higgs #eta (#tau_{h}#tau_{h});", 80, -10, 10);
+  TH1F* h_higgs_eta_ll = new TH1F("higgs_eta_ll", ";Higgs #eta; ("+type+"@"+Ecm+")", 80, -10, 10);
+  TH1F* h_higgs_eta_lh = new TH1F("higgs_eta_lh", ";Higgs #eta; ("+type+"@"+Ecm+")", 80, -10, 10);
+  TH1F* h_higgs_eta_hh = new TH1F("higgs_eta_hh", ";Higgs #eta; ("+type+"@"+Ecm+")", 80, -10, 10);
   
-  TH1F* h_higgs_phi_ll = new TH1F("higgs_phi_ll", ";Higgs #phi (#tau_{l}#tau_{l});", 70, -3.5, 3.5);
-  TH1F* h_higgs_phi_lh = new TH1F("higgs_phi_lh", ";Higgs #phi (#tau_{l}#tau_{h});", 70, -3.5, 3.5);
-  TH1F* h_higgs_phi_hh = new TH1F("higgs_phi_hh", ";Higgs #phi (#tau_{h}#tau_{h});", 70, -3.5, 3.5);
+  TH1F* h_higgs_phi_ll = new TH1F("higgs_phi_ll", ";Higgs #phi; ("+type+"@"+Ecm+")", 70, -3.5, 3.5);
+  TH1F* h_higgs_phi_lh = new TH1F("higgs_phi_lh", ";Higgs #phi; ("+type+"@"+Ecm+")", 70, -3.5, 3.5);
+  TH1F* h_higgs_phi_hh = new TH1F("higgs_phi_hh", ";Higgs #phi; ("+type+"@"+Ecm+")", 70, -3.5, 3.5);
 
-  TH1F* h_tau_pt_l = new TH1F("higgs_pt_l", ";Leptonic #tau p_{T} [GeV];", 100, 0, 500);
-  TH1F* h_tau_pt_h = new TH1F("higgs_pt_h", ";Hadronic #tau p_{T} [GeV];", 100, 0, 500);
-  TH1F* h_tau_eta_l = new TH1F("tau_eta_l", ";Leptonic #tau #eta;", 80, -10, 10);
-  TH1F* h_tau_eta_h = new TH1F("tau_eta_h", ";Hadronic #tau #eta;", 80, -10, 10);
-  TH1F* h_tau_phi_l = new TH1F("tau_phi_l", ";Leptonic #tau #phi;", 70, -3.5, 3.5);
-  TH1F* h_tau_phi_h = new TH1F("tau_phi_h", ";Hadronic #tau #phi;", 70, -3.5, 3.5);
+  TH1F* h_tau_pt_l = new TH1F("higgs_pt_l", ";#tau p_{T} [GeV]; ("+type+"@"+Ecm+")", 100, 0, 500);
+  TH1F* h_tau_pt_h = new TH1F("higgs_pt_h", ";#tau p_{T} [GeV]; ("+type+"@"+Ecm+")", 100, 0, 500);
+  TH1F* h_tau_eta_l = new TH1F("tau_eta_l", ";#tau #eta; ("+type+"@"+Ecm+")", 80, -10, 10);
+  TH1F* h_tau_eta_h = new TH1F("tau_eta_h", ";#tau #eta; ("+type+"@"+Ecm+")", 80, -10, 10);
+  TH1F* h_tau_phi_l = new TH1F("tau_phi_l", ";#tau #phi; ("+type+"@"+Ecm+")", 70, -3.5, 3.5);
+  TH1F* h_tau_phi_h = new TH1F("tau_phi_h", ";#tau #phi; ("+type+"@"+Ecm+")", 70, -3.5, 3.5);
   
-  TH1F* h_taudecay_vr_l = new TH1F("taudecay_vr_l", ";Leptonic #tau decay v_{r};", 40, 0, 2.);
-  TH1F* h_taudecay_vr_h = new TH1F("taudecay_vr_h", ";Hadronic #tau decay v_{r};", 40, 0, 2.);
-  TH1F* h_taudecay_vz_l = new TH1F("taudecay_vz_l", ";Leptonic #tau decay v_{z};", 40, -2., 2.);
-  TH1F* h_taudecay_vz_h = new TH1F("taudecay_vz_h", ";Hadronic #tau decay v_{z};", 40, -2., 2.);
+  TH1F* h_taudecay_vr_l = new TH1F("taudecay_vr_l", ";#tau decay v_{r}; ("+type+"@"+Ecm+")", 40, 0, 2.);
+  TH1F* h_taudecay_vr_h = new TH1F("taudecay_vr_h", ";#tau decay v_{r}; ("+type+"@"+Ecm+")", 40, 0, 2.);
+  TH1F* h_taudecay_vz_l = new TH1F("taudecay_vz_l", ";#tau decay v_{z}; ("+type+"@"+Ecm+")", 40, -2., 2.);
+  TH1F* h_taudecay_vz_h = new TH1F("taudecay_vz_h", ";#tau decay v_{z}; ("+type+"@"+Ecm+")", 40, -2., 2.);
 
-  TH1F* h_tauvispt_l = new TH1F("tauvispt_l", ";Leptonic #tau visible p_{T} [GeV];", 50, 0., 200.);
-  TH1F* h_tauvispt_h = new TH1F("tauvispt_h", ";Hadronic #tau visible p_{T} [GeV];", 50, 0., 200.);
+  TH1F* h_tauvispt_l = new TH1F("tauvispt_l", ";#tau visible p_{T} [GeV]; ("+type+"@"+Ecm+")", 50, 0., 200.);
+  TH1F* h_tauvispt_h = new TH1F("tauvispt_h", ";#tau visible p_{T} [GeV]; ("+type+"@"+Ecm+")", 50, 0., 200.);
 
-  TH1F* h_stabledaug_pt_l = new TH1F("stabledaug_pt_l", ";Leptonic #tau stable daughters p_{T} [GeV];", 50, 0., 200.);
-  TH1F* h_stabledaug_pt_h = new TH1F("stabledaug_pt_h", ";Hadronic #tau stable daughters p_{T} [GeV];", 50, 0., 200.);
-  TH1F* h_stabledaug_eta_l = new TH1F("stabledaug_eta_l", ";Leptonic #tau stable daughters #eta;", 80, -10., 10.);
-  TH1F* h_stabledaug_eta_h = new TH1F("stabledaug_eta_h", ";Hadronic #tau stable daughters #eta;", 80, -10., 10.);
-  TH1F* h_stabledaug_phi_l = new TH1F("stabledaug_phi_l", ";Leptonic #tau stable daughters #phi;", 70, -3.5, 3.5);
-  TH1F* h_stabledaug_phi_h = new TH1F("stabledaug_phi_h", ";Hadronic #tau stable daughters #phi;", 70, -3.5, 3.5);
+  TH1F* h_stabledaug_pt_l = new TH1F("stabledaug_pt_l", ";#tau stable daughters p_{T} [GeV]; ("+type+"@"+Ecm+")", 50, 0., 200.);
+  TH1F* h_stabledaug_pt_h = new TH1F("stabledaug_pt_h", ";#tau stable daughters p_{T} [GeV]; ("+type+"@"+Ecm+")", 50, 0., 200.);
+  TH1F* h_stabledaug_eta_l = new TH1F("stabledaug_eta_l", ";#tau stable daughters #eta; ("+type+"@"+Ecm+")", 80, -10., 10.);
+  TH1F* h_stabledaug_eta_h = new TH1F("stabledaug_eta_h", ";#tau stable daughters #eta; ("+type+"@"+Ecm+")", 80, -10., 10.);
+  TH1F* h_stabledaug_phi_l = new TH1F("stabledaug_phi_l", ";#tau stable daughters #phi; ("+type+"@"+Ecm+")", 70, -3.5, 3.5);
+  TH1F* h_stabledaug_phi_h = new TH1F("stabledaug_phi_h", ";#tau stable daughters #phi; ("+type+"@"+Ecm+")", 70, -3.5, 3.5);
 
-  TH1F* h_recohiggs_mass_ll = new TH1F("recohiggs_mass_ll", "Reco higgs mass (#tau_{l}#tau_{l})", 100, 0, 200);
-  TH1F* h_recohiggs_mass_lh = new TH1F("recohiggs_mass_lh", "Reco higgs mass (#tau_{l}#tau_{h})", 100, 0, 200);
-  TH1F* h_recohiggs_mass_hh = new TH1F("recohiggs_mass_hh", "Reco higgs mass (#tau_{h}#tau_{h})", 100, 0, 200);
-  TH1F* h_recohiggs_mass_nop0 = new TH1F("recohiggs_mass_nop0", "Reco higgs mass (w/o events with #pi^{0} in final states)", 100, 0, 200);
+  TH1F* h_recohiggs_mass_ll = new TH1F("recohiggs_mass_ll", "Reco higgs mass ("+type+"@"+Ecm+")", 100, 0, 200);
+  TH1F* h_recohiggs_mass_lh = new TH1F("recohiggs_mass_lh", "Reco higgs mass ("+type+"@"+Ecm+")", 100, 0, 200);
+  TH1F* h_recohiggs_mass_hh = new TH1F("recohiggs_mass_hh", "Reco higgs mass ("+type+"@"+Ecm+")", 100, 0, 200);
+  TH1F* h_recohiggs_mass_nop0 = new TH1F("recohiggs_mass_nop0", "Reco higgs mass (without events with #pi^{0} in final states) ("+type+"@"+Ecm+")", 100, 0, 200);
   
-  TH1F* h_tauptfromvertex = new TH1F("tauptfromvertex", ";#tau p_{T} calculated from decay vertex[GeV];", 100,0,500);
+  TH1F* h_taulifetime = new TH1F("taulifetime", ";#tau lifetime (10^{-12}s) calculated from decay vertex and p_{T}; ("+type+"@"+Ecm+")", 100,0,2.);
 
 
   // ----------------------------------------------------------------------------------------------------------------
   //        * * * * *     S T A R T   O F   A C T U A L   R U N N I N G   O N   E V E N T S     * * * * *
   // ----------------------------------------------------------------------------------------------------------------
 
-  const double ttau = 2.906*pow(10,-13); //(s)tau mean lifetime
+  //const double ttau = 2.906*pow(10,-13); //(s)tau mean lifetime
   const double mtau = 1.777; //tau mass (GeV)
-  const double speedoflight = 3*pow(10,10);  //(cm/s)
+  const double speedoflight = 0.02998;  //(10^12 cm/s)
 
   int nevt = tree->GetEntries();
   cout << "number of events = " << nevt << endl;
@@ -242,8 +243,10 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
 	h_taudecay_vz_l -> Fill(taudecay_vz->at(itau));
       }
 
-      double ptfromvr = taudecay_vr->at(itau)*mtau/(ttau*speedoflight);
-      h_tauptfromvertex -> Fill(ptfromvr);
+      //estimate tau lifetime from tau pt and decay vr
+      // lt = mtau*vr / (pt*c)
+      double tault = taudecay_vr->at(itau)*mtau/(tau_pt->at(itau)*speedoflight);
+      h_taulifetime -> Fill(tault);
 
       //stable daughter loop
       //cout << "processing tau stable daughters ..." << endl;
@@ -302,7 +305,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_higgs_pt_lh -> Draw();
   h_higgs_pt_hh -> Draw("same");
   h_higgs_pt_ll -> Draw("same");
-  TLegend* leg_higgs_pt = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_higgs_pt = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_higgs_pt -> AddEntry(h_higgs_pt_hh, "#tau_{h}#tau_{h}","l");
   leg_higgs_pt -> AddEntry(h_higgs_pt_lh, "#tau_{l}#tau_{h}","l");
   leg_higgs_pt -> AddEntry(h_higgs_pt_ll, "#tau_{l}#tau_{l}","l");
@@ -315,7 +318,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_higgs_eta_lh -> Draw();
   h_higgs_eta_hh -> Draw("same");
   h_higgs_eta_ll -> Draw("same");
-  TLegend* leg_higgs_eta = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_higgs_eta = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_higgs_eta -> AddEntry(h_higgs_eta_hh, "#tau_{h}#tau_{h}","l");
   leg_higgs_eta -> AddEntry(h_higgs_eta_lh, "#tau_{l}#tau_{h}","l");
   leg_higgs_eta -> AddEntry(h_higgs_eta_ll, "#tau_{l}#tau_{l}","l");
@@ -328,7 +331,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_higgs_phi_lh -> Draw();
   h_higgs_phi_hh -> Draw("same");
   h_higgs_phi_ll -> Draw("same");
-  TLegend* leg_higgs_phi = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_higgs_phi = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_higgs_phi -> AddEntry(h_higgs_phi_hh, "#tau_{h}#tau_{h}","l");
   leg_higgs_phi -> AddEntry(h_higgs_phi_lh, "#tau_{l}#tau_{h}","l");
   leg_higgs_phi -> AddEntry(h_higgs_phi_ll, "#tau_{l}#tau_{l}","l");
@@ -339,7 +342,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_tau_pt_l -> SetLineColor(4);
   h_tau_pt_h -> Draw();
   h_tau_pt_l -> Draw("same");
-  TLegend* leg_tau_pt = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_tau_pt = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_tau_pt -> AddEntry(h_tau_pt_h, "Hadronic","l");
   leg_tau_pt -> AddEntry(h_tau_pt_l, "Leptonic","l");
   leg_tau_pt -> Draw();
@@ -349,7 +352,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_tau_eta_l -> SetLineColor(4);
   h_tau_eta_h -> Draw();
   h_tau_eta_l -> Draw("same");
-  TLegend* leg_tau_eta = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_tau_eta = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_tau_eta -> AddEntry(h_tau_eta_h, "Hadronic","l");
   leg_tau_eta -> AddEntry(h_tau_eta_l, "Leptonic","l");
   leg_tau_eta -> Draw();
@@ -359,7 +362,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_tau_phi_l -> SetLineColor(4);
   h_tau_phi_h -> Draw();
   h_tau_phi_l -> Draw("same");
-  TLegend* leg_tau_phi = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_tau_phi = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_tau_phi -> AddEntry(h_tau_phi_h, "Hadronic","l");
   leg_tau_phi -> AddEntry(h_tau_phi_l, "Leptonic","l");
   leg_tau_phi -> Draw();
@@ -369,7 +372,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_taudecay_vr_l -> SetLineColor(4);
   h_taudecay_vr_h -> Draw();
   h_taudecay_vr_l -> Draw("same");
-  TLegend* leg_taudecay_vr = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_taudecay_vr = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_taudecay_vr -> AddEntry(h_taudecay_vr_h, "Hadronic","l");
   leg_taudecay_vr -> AddEntry(h_taudecay_vr_l, "Leptonic","l");
   leg_taudecay_vr -> Draw();
@@ -379,7 +382,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_taudecay_vz_l -> SetLineColor(4);
   h_taudecay_vz_h -> Draw();
   h_taudecay_vz_l -> Draw("same");
-  TLegend* leg_taudecay_vz = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_taudecay_vz = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_taudecay_vz -> AddEntry(h_taudecay_vz_h, "Hadronic","l");
   leg_taudecay_vz -> AddEntry(h_taudecay_vz_l, "Leptonic","l");
   leg_taudecay_vz -> Draw();
@@ -389,7 +392,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_tauvispt_l -> SetLineColor(4);
   h_tauvispt_h -> Draw();
   h_tauvispt_l -> Draw("same");
-  TLegend* leg_tauvispt = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_tauvispt = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_tauvispt -> AddEntry(h_tauvispt_h, "Hadronic","l");
   leg_tauvispt -> AddEntry(h_tauvispt_l, "Leptonic","l");
   leg_tauvispt -> Draw();
@@ -399,7 +402,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_stabledaug_pt_l -> SetLineColor(4);
   h_stabledaug_pt_h -> Draw();
   h_stabledaug_pt_l -> Draw("same");
-  TLegend* leg_stabledaug_pt = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_stabledaug_pt = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_stabledaug_pt -> AddEntry(h_stabledaug_pt_h, "Hadronic","l");
   leg_stabledaug_pt -> AddEntry(h_stabledaug_pt_l, "Leptonic","l");
   leg_stabledaug_pt -> Draw();
@@ -409,7 +412,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_stabledaug_eta_l -> SetLineColor(4);
   h_stabledaug_eta_h -> Draw();
   h_stabledaug_eta_l -> Draw("same");
-  TLegend* leg_stabledaug_eta = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_stabledaug_eta = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_stabledaug_eta -> AddEntry(h_stabledaug_eta_h, "Hadronic","l");
   leg_stabledaug_eta -> AddEntry(h_stabledaug_eta_l, "Leptonic","l");
   leg_stabledaug_eta -> Draw();
@@ -419,7 +422,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_stabledaug_phi_l -> SetLineColor(4);
   h_stabledaug_phi_h -> Draw();
   h_stabledaug_phi_l -> Draw("same");
-  TLegend* leg_stabledaug_phi = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_stabledaug_phi = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_stabledaug_phi -> AddEntry(h_stabledaug_eta_h, "Hadronic","l");
   leg_stabledaug_phi -> AddEntry(h_stabledaug_eta_l, "Leptonic","l");
   leg_stabledaug_phi -> Draw();
@@ -431,7 +434,7 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_recohiggs_mass_lh -> Draw();
   h_recohiggs_mass_hh -> Draw("same");
   h_recohiggs_mass_ll -> Draw("same");
-  TLegend* leg_recohiggs_mass = new TLegend(0.7, 0.6, 0.89, 0.89);
+  TLegend* leg_recohiggs_mass = new TLegend(0.7, 0.75, 0.89, 0.89);
   leg_recohiggs_mass -> AddEntry(h_recohiggs_mass_hh, "#tau_{h}#tau_{h}","l");
   leg_recohiggs_mass -> AddEntry(h_recohiggs_mass_lh, "#tau_{l}#tau_{h}","l");
   leg_recohiggs_mass -> AddEntry(h_recohiggs_mass_ll, "#tau_{l}#tau_{l}","l");
@@ -441,7 +444,19 @@ void GeneratorPlot(const TString type = "gg2H", const TString Ecm = "13TeV") {
   h_recohiggs_mass_nop0 -> Draw();
   c.SaveAs("Plots/"+Ecm+"/"+type+"/recohiggs_mass_nop0.png");
 
-  h_tauptfromvertex -> Draw();
-  c.SaveAs("Plots/"+Ecm+"/"+type+"/tauptfromvertex.png");
 
+  //Fit tau lifetime histogram with exp
+  gStyle->SetOptFit(0111);
+  TF1 *fitf = new TF1("fitf","[0]*exp(-x/[1])",0,2.0);
+  fitf -> SetParameters(1400.,0.3);
+  h_taulifetime -> Fit("fitf","LR");
+  //h_taulifetime -> Draw();
+  double tau_meanlifetime = fitf->GetParameter(1);
+  //TPaveText *t1 = new TPaveText(0.7, 0.6, 0.89, 0.89);
+  //t1->AddText("Likelihood fit f(x)=A*exp(-x/t)");
+  //t1->Draw("same");
+  c.SaveAs("Plots/"+Ecm+"/"+type+"/taulifetime.png");
+  
+  cout << "Estimated tau mean lifetime: " <<  tau_meanlifetime << endl;
+  
 }
