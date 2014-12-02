@@ -1,0 +1,33 @@
+Standard-Model Higgs, basic processes
+
+This section provides the standard set of processes that can be run together to provide a reasonably complete overview of possible production channels for a single SM Higgs. The main parameter is the choice of Higgs mass, which can be set in the normal ParticleData database; thereafter the properties within the SM are essentially fixed. 
+
+HiggsSM:all  On Off   (default = off)
+Common switch for the group of Higgs production within the Standard Model. 
+
+HiggsSM:ffbar2H  On Off   (default = off)
+Scattering f fbar → H^0, where f sums over available flavours except top. Related to the mass-dependent Higgs point coupling to fermions, so at hadron colliders the bottom contribution will dominate. Code 901. 
+
+HiggsSM:gg2H  On Off   (default = off)
+Scattering g g → H^0 via loop contributions primarily from top. Code 902. 
+
+HiggsSM:gmgm2H  On Off   (default = off)
+Scattering gamma gamma → H^0 via loop contributions primarily from top and W. Code 903. 
+
+HiggsSM:ffbar2HZ  On Off   (default = off)
+Scattering f fbar → H^0 Z^0 via s-channel Z^0 exchange. Code 904. 
+
+HiggsSM:ffbar2HW  On Off   (default = off)
+Scattering f fbar → H^0 W^+- via s-channel W^+- exchange. Code 905. 
+
+HiggsSM:ff2Hff(t:ZZ)  On Off   (default = off)
+Scattering f f' → H^0 f f' via Z^0 Z^0 fusion. Code 906. 
+
+HiggsSM:ff2Hff(t:WW)  On Off   (default = off)
+Scattering f_1 f_2 → H^0 f_3 f_4 via W^+ W^- fusion. Code 907. 
+
+HiggsSM:gg2Httbar  On Off   (default = off)
+Scattering g g → H^0 t tbar via t tbar fusion (or, alternatively put, Higgs radiation off a top line). Warning: unfortunately this process is rather slow, owing to a lengthy cross-section expression and inefficient phase-space selection. Code 908. 
+
+HiggsSM:qqbar2Httbar  On Off   (default = off)
+Scattering q qbar → H^0 t tbar via t tbar fusion (or, alternatively put, Higgs radiation off a top line). Warning: unfortunately this process is rather slow, owing to a lengthy cross-section expression and inefficient phase-space selection. Code 909.
