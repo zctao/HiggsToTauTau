@@ -143,6 +143,8 @@ private:
   std::vector<int>*   m_stabledaug_index;  //come from which tau
   std::vector<int>*   m_tau_nvisstabledaug;
   std::vector<float>* m_tau_vispt;
+  std::vector<float>* m_tau_visE;
+  std::vector<float>* m_tau_visP;
   std::vector<float>* m_stabledaug_pt;
   std::vector<float>* m_stabledaug_eta;
   std::vector<float>* m_stabledaug_phi;
@@ -233,6 +235,8 @@ void GeneratorNtupleMaker::beginJob()
   m_stabledaug_index = new std::vector<int>;
   m_tau_nvisstabledaug = new std::vector<int>;
   m_tau_vispt = new std::vector<float>;
+  m_tau_visE  = new std::vector<float>;
+  m_tau_visP  = new std::vector<float>;
   m_stabledaug_pt = new std::vector<float>;
   m_stabledaug_eta = new std::vector<float>;
   m_stabledaug_phi = new std::vector<float>;
@@ -277,6 +281,8 @@ void GeneratorNtupleMaker::beginJob()
   eventTree->Branch("stabledaug_index", &m_stabledaug_index);
   eventTree->Branch("tau_nvisstabledaug",  &m_tau_nvisstabledaug);
   eventTree->Branch("tau_vispt",        &m_tau_vispt);
+  eventTree->Branch("tau_visE",         &m_tau_visE);
+  eventTree->Branch("tau_visP",         &m_tau_visP);
   eventTree->Branch("stabledaug_pt",    &m_stabledaug_pt);
   eventTree->Branch("stabledaug_eta",   &m_stabledaug_eta);
   eventTree->Branch("stabledaug_phi",   &m_stabledaug_phi);
@@ -424,6 +430,8 @@ void GeneratorNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSet
   m_stabledaug_index->clear();
   m_tau_nvisstabledaug->clear();
   m_tau_vispt->clear();
+  m_tau_visE ->clear();
+  m_tau_visP ->clear();
   m_stabledaug_pt->clear();
   m_stabledaug_eta->clear();
   m_stabledaug_phi->clear();
@@ -561,7 +569,7 @@ void GeneratorNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSet
 	m_stabledaug_mass  -> push_back(stabledaughters[j]->mass());
 	m_stabledaug_id    -> push_back(stabledaughters[j]->pdgId());
 
-	//Calculate number of stable daughters and tau's visible pt
+	//number of stable daughters and tau's visible pt
 	if (fabs(stabledaughters[j]->pdgId())!=12 && fabs(stabledaughters[j]->pdgId())!=14 && fabs(stabledaughters[j]->pdgId())!=16) {
 	  p4Tau[idaug] = p4Tau[idaug]+PtEtaPhiMLorentzVector(stabledaughters[j]->pt(),stabledaughters[j]->eta(),stabledaughters[j]->phi(),stabledaughters[j]->mass());
 	  nvisdaug++;
@@ -577,7 +585,8 @@ void GeneratorNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSet
       m_tau_nprongsK -> push_back(nprongsK);
       m_tau_nvisstabledaug -> push_back(nvisdaug);
       m_tau_vispt -> push_back(p4Tau[idaug].Pt());
-
+      m_tau_visE  -> push_back(p4Tau[idaug].E());
+      m_tau_visP  -> push_back(p4Tau[idaug].P());
       
       if (foundPi0 && printPi0Evts) {
 	cout << "**********************************************************" << endl;
